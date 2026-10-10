@@ -6,7 +6,9 @@
     <title>Menú Digital</title>
     <style>
         body { font-family: Arial, sans-serif; background: #f4f4f9; margin: 0; padding: 20px; padding-bottom: 90px; color: #333; }
-        h1 { text-align: center; color: #d9534f; }
+        .portada-container { text-align: center; margin-bottom: 15px; }
+        .portada-container img { max-width: 100%; max-height: 200px; border-radius: 8px; object-fit: cover; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+        h1 { text-align: center; color: #d9534f; margin-top: 10px; }
         .categoria { margin-top: 30px; }
         .producto { background: #fff; padding: 15px; margin-bottom: 12px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 15px; }
         .producto img { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; flex-shrink: 0; background: #ddd; }
@@ -22,6 +24,9 @@
 </head>
 <body>
 
+    <!-- Contenedor para la imagen de portada -->
+    <div id="portada-wrapper"></div>
+    
     <h1 id="titulo-menu">Cargando Menú...</h1>
     <div id="menu-container"></div>
 
@@ -46,6 +51,15 @@
             .then(data => {
                 if (!data.ok) return;
                 
+                // Mostrar Imagen de Portada si está cargada en Ajustes_Menu
+                if (data.config.IMAGEN_PORTADA) {
+                    document.getElementById('portada-wrapper').innerHTML = `
+                        <div class="portada-container">
+                            <img src="${data.config.IMAGEN_PORTADA}" alt="Portada del Local">
+                        </div>
+                    `;
+                }
+
                 document.getElementById('titulo-menu').innerText = data.config.NOMBRE_LOCAL || "Nuestro Menú";
                 productosGlobal = data.productos;
                 const contenedor = document.getElementById('menu-container');
