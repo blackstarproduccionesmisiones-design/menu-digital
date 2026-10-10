@@ -8,7 +8,8 @@
         body { font-family: Arial, sans-serif; background: #f4f4f9; margin: 0; padding: 20px; padding-bottom: 90px; color: #333; }
         h1 { text-align: center; color: #d9534f; }
         .categoria { margin-top: 30px; }
-        .producto { background: #fff; padding: 15px; margin-bottom: 12px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; gap: 15px; }
+        .producto { background: #fff; padding: 15px; margin-bottom: 12px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; align-items: center; gap: 15px; }
+        .producto img { width: 80px; height: 80px; object-fit: cover; border-radius: 6px; flex-shrink: 0; background: #ddd; }
         .info { flex-grow: 1; }
         .precio { font-weight: bold; color: #5cb85c; font-size: 1.1em; margin-top: 5px; display: block; }
         button { background: #d9534f; color: #fff; border: none; padding: 8px 14px; border-radius: 5px; cursor: pointer; font-weight: bold; }
@@ -35,8 +36,6 @@
 
     <script>
         const URL_API = "https://script.google.com/macros/s/AKfycbyuvd5TKJFvOsGu9dc93uNO5R7DXtTH15zHmUslxz62BWwfINIKwwhIYQzbuWWIb300/exec";
-        
-        // REEMPLAZÁ ESTE NÚMERO POR TU WHATSAPP (con código de país y área, sin signos ni espacios, ej: 5493764561004)
         const NUMERO_WHATSAPP = "5493764561004"; 
 
         let carrito = [];
@@ -58,8 +57,11 @@
                     
                     const prodsCat = data.productos.filter(p => p.categoria_id == cat.id);
                     prodsCat.forEach(p => {
+                        const imgTag = p.imagen ? `<img src="${p.imagen}" alt="${p.nombre}">` : '';
+                        
                         divCat.innerHTML += `
                             <div class="producto">
+                                ${imgTag}
                                 <div class="info">
                                     <strong>${p.nombre}</strong>
                                     <p style="margin: 5px 0; color: #666; font-size: 0.9em;">${p.descripcion || ''}</p>
@@ -89,7 +91,6 @@
 
             const btnWp = document.getElementById('btn-whatsapp');
             if (carrito.length > 0) {
-                // Armar texto del mensaje ordenado
                 let mensaje = "Hola! Quiero hacer el siguiente pedido:\n\n";
                 carrito.forEach((item, index) => {
                     mensaje += `${index + 1}. ${item.nombre} - $${item.precio}\n`;
