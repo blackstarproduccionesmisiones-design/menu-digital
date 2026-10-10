@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menú Digital</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f9; margin: 0; padding: 20px; color: #333; }
+        h1 { text-align: center; color: #d9534f; }
+        .categoria { margin-top: 30px; }
+        .producto { background: #fff; padding: 15px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .precio { float: right; font-weight: bold; color: #5cb85c; }
+    </style>
+</head>
+<body>
+
+    <h1 id="titulo-menu">Cargando Menú...</h1>
+    <div id="menu-container"></div>
+
+    <script>
+        // PEGA AQUÍ LA URL DE TU WEB APP DE APPS SCRIPT CUANDO LA IMPLEMENTES
+        const URL_API = "TU_URL_DE_APPS_SCRIPT_AQUI";
+
+        fetch(URL_API)
+            .then(res => res.json())
+            .then(data => {
+                if (!data.ok) return;
+                
+                document.getElementById('titulo-menu').innerText = data.config.NOMBRE_LOCAL || "Nuestro Menú";
+                const contenedor = document.getElementById('menu-container');
+                
+                data.categorias.forEach(cat => {
+                    const divCat = document.createElement('div');
+                    divCat.className = 'categoria';
+                    divCat.innerHTML = `<h2>${cat.nombre}</h2>`;
+                    
+                    const prodsCat = data.productos.filter(p => p.categoria_id == cat.id);
+                    prodsCat.forEach(p => {
+                        divCat.innerHTML += `
+                            <div class="producto">
+                                <span class="precio">$${p.precio}</span>
+                                <strong>${p.nombre}</strong>
+                                <p>${p.descripcion || ''}</p>
+                            </div>
+                        `;
+                    });
+                    contenedor.appendChild(divCat);
+                });
+            });
+    </script>
+</body>
+</html>
