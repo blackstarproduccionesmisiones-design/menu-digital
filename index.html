@@ -5,11 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Menú Digital</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #f4f4f9; margin: 0; padding: 20px; color: #333; }
+        body { font-family: Arial, sans-serif; background: #f4f4f9; margin: 0; padding: 20px; padding-bottom: 90px; color: #333; }
         h1 { text-align: center; color: #d9534f; }
         .categoria { margin-top: 30px; }
-        .producto { background: #fff; padding: 15px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .precio { float: right; font-weight: bold; color: #5cb85c; }
+        .producto { background: #fff; padding: 15px; margin-bottom: 12px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; gap: 15px; }
+        .info { flex-grow: 1; }
+        .precio { font-weight: bold; color: #5cb85c; font-size: 1.1em; margin-top: 5px; display: block; }
+        button { background: #d9534f; color: #fff; border: none; padding: 8px 14px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #c9302c; }
+        /* Barra flotante del carrito */
+        #carrito-flotante { position: fixed; bottom: 0; left: 0; width: 100%; background: #222; color: #fff; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 -2px 10px rgba(0,0,0,0.2); box-sizing: border-box; }
+        #btn-whatsapp { background: #25d366; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; display: none; }
+        #btn-whatsapp:hover { background: #1ebd59; }
     </style>
 </head>
 <body>
@@ -17,9 +24,23 @@
     <h1 id="titulo-menu">Cargando Menú...</h1>
     <div id="menu-container"></div>
 
+    <!-- Barra fija del carrito -->
+    <div id="carrito-flotante">
+        <div>
+            <strong>Carrito:</strong> <span id="contador-carrito">0</span> ítems | 
+            <strong>Total:</strong> $<span id="total-carrito">0</span>
+        </div>
+        <a id="btn-whatsapp" href="#" target="_blank">Enviar Pedido por WhatsApp</a>
+    </div>
+
     <script>
-        // PEGA AQUÍ LA URL DE TU WEB APP DE APPS SCRIPT CUANDO LA IMPLEMENTES
         const URL_API = "https://script.google.com/macros/s/AKfycbyuvd5TKJFvOsGu9dc93uNO5R7DXtTH15zHmUslxz62BWwfINIKwwhIYQzbuWWIb300/exec";
+        
+        // REEMPLAZÁ ESTE NÚMERO POR TU WHATSAPP (con código de país y área, sin signos ni espacios, ej: 5493764561004)
+        const NUMERO_WHATSAPP = "5493764561004"; 
+
+        let carrito = [];
+        let productosGlobal = [];
 
         fetch(URL_API)
             .then(res => res.json())
@@ -27,6 +48,7 @@
                 if (!data.ok) return;
                 
                 document.getElementById('titulo-menu').innerText = data.config.NOMBRE_LOCAL || "Nuestro Menú";
+                productosGlobal = data.productos;
                 const contenedor = document.getElementById('menu-container');
                 
                 data.categorias.forEach(cat => {
@@ -38,15 +60,49 @@
                     prodsCat.forEach(p => {
                         divCat.innerHTML += `
                             <div class="producto">
-                                <span class="precio">$${p.precio}</span>
-                                <strong>${p.nombre}</strong>
-                                <p>${p.descripcion || ''}</p>
+                                <div class="info">
+                                    <strong>${p.nombre}</strong>
+                                    <p style="margin: 5px 0; color: #666; font-size: 0.9em;">${p.descripcion || ''}</p>
+                                    <span class="precio">$${p.precio}</span>
+                                </div>
+                                <button onclick="agregarAlCarrito('${p.id}')">Agregar</button>
                             </div>
                         `;
                     });
                     contenedor.appendChild(divCat);
                 });
             });
+
+        function agregarAlCarrito(idProducto) {
+            const producto = productosGlobal.find(p => p.id == idProducto);
+            if (!producto) return;
+
+            carrito.push(producto);
+            actualizarCarrito();
+        }
+
+        function actualizarCarrito() {
+            document.getElementById('contador-carrito').innerText = carrito.length;
+            
+            const total = carrito.reduce((acc, item) => acc + Number(item.precio), 0);
+            document.getElementById('total-carrito').innerText = total;
+
+            const btnWp = document.getElementById('btn-whatsapp');
+            if (carrito.length > 0) {
+                // Armar texto del mensaje ordenado
+                let mensaje = "Hola! Quiero hacer el siguiente pedido:\n\n";
+                carrito.forEach((item, index) => {
+                    mensaje += `${index + 1}. ${item.nombre} - $${item.precio}\n`;
+                });
+                mensaje += `\n*Total a pagar: $${total}*`;
+
+                const urlWp = `https://api.whatsapp.com/send?phone=${NUMERO_WHATSAPP}&text=${encodeURIComponent(mensaje)}`;
+                btnWp.href = urlWp;
+                btnWp.style.display = "inline-block";
+            } else {
+                btnWp.style.display = "none";
+            }
+        }
     </script>
 </body>
 </html>
